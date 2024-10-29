@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "threads.h": "c",
+        "data_structures.h": "c"
+    },
+    "makefile.configureOnOpen": true,
+    "C_Cpp.errorSquiggles": "enabled"
+}
