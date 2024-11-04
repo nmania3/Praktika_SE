@@ -5,7 +5,7 @@
 
 timer_frequency=1;
 clock_frequency=1;
-temp_kop=1;
+temp_kop=2;
 done=0;
 
 pthread_mutex_t mutex_clock;
@@ -19,7 +19,8 @@ int main(int argc, char const *argv[])
     pthread_mutex_init(&mutex_clock, NULL);
 
     pthread_create(&clock_tid, NULL, clock_thread, NULL);
-    pthread_create(&timer_tid, NULL, timer_thread, NULL);
+    pthread_create(&timer_tid, NULL, timer_thread1, NULL);
+    pthread_create(&timer_tid, NULL, timer_thread2, NULL);
 
     pthread_join(clock_tid, NULL);
     pthread_join(timer_tid, NULL);

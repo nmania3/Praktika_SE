@@ -13,9 +13,10 @@ void *clock_thread(void *arg) {
         while (done<temp_kop)
         {
             pthread_cond_wait(&cond, &mutex_clock);
-            printf("soy el reloj %d\n", done);
+           
             
         }
+         printf("soy el reloj %d\n", done);
         done=0;
         sleep(clock_frequency);
         pthread_cond_broadcast(&cond2);

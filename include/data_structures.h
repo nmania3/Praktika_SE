@@ -21,5 +21,11 @@ struct CPU
     int thread_num;
 };
 
+struct PCB
+{
+    int pid;
+    //luego meteremos mas cosas
+};
+
 
 #endif // DATA_STRUCTURES_H
