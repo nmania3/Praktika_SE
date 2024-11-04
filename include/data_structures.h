@@ -25,7 +25,7 @@ struct PCB
 {
     int pid;
     //luego meteremos mas cosas
-};
+} PCB;
 
 
 #endif // DATA_STRUCTURES_H
