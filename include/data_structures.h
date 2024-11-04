@@ -11,5 +11,15 @@ extern int tenp_kop;
 extern int done;
 
 extern pthread_mutex_t mutex_clock;
+extern pthread_cond_t cond;
+extern pthread_cond_t cond2;
+
+struct CPU
+{
+    int cpu_num;
+    int core_num;
+    int thread_num;
+};
+
 
 #endif // DATA_STRUCTURES_H

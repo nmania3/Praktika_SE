@@ -17,7 +17,7 @@ CPPFLAGS = -Wall
 # dependency-generation flags
 DEPFLAGS = -MMD -MP
 # linker flags
-LDFLAGS = 
+LDFLAGS = -lpthread
 # library flags
 LDLIBS = 
 
