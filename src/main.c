@@ -9,14 +9,19 @@ int temp_kop=2;
 int done=0;
 
 pthread_mutex_t mutex_clock;
+pthread_mutex_t queue_mutex;
+
 pthread_cond_t cond;
 pthread_cond_t cond2;
+pthread_cond_t cond_gen;
 
 int main(int argc, char const *argv[])
 {
     pthread_t clock_tid, timer_tid1, timer_tid2, scheduler_tid, proccess_generator_tid;
 
     pthread_mutex_init(&mutex_clock, NULL);
+    pthread_mutex_init(&queue_mutex, NULL);
+    pthread_cond_init(&cond_gen, NULL);
 
     pthread_create(&clock_tid, NULL, clock_thread, NULL);
     pthread_create(&timer_tid1, NULL, timer_thread1, NULL);
@@ -31,6 +36,8 @@ int main(int argc, char const *argv[])
     pthread_join(proccess_generator_tid, NULL);
 
     pthread_mutex_destroy(&mutex_clock);
+    pthread_mutex_destroy(&queue_mutex);
+    pthread_cond_destroy(&cond_gen);
 
     return 0;
 

@@ -11,8 +11,11 @@ extern int tenp_kop;
 extern int done;
 
 extern pthread_mutex_t mutex_clock;
+extern pthread_mutex_t queue_mutex;
+
 extern pthread_cond_t cond;
 extern pthread_cond_t cond2;
+extern pthread_cond_t cond_gen;
 
 struct CPU
 {
@@ -21,11 +24,12 @@ struct CPU
     int thread_num;
 };
 
-struct PCB
+typedef struct
 {
     int pid;
     //luego meteremos mas cosas
 } PCB;
 
+extern PCB *proccess_queue;
 
 #endif // DATA_STRUCTURES_H

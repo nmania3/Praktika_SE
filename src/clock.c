@@ -2,26 +2,20 @@
 #include <stdio.h>
 #include "../include/data_structures.h"
 #include <pthread.h>
+#include <unistd.h> // Para sleep
 
-
+extern pthread_cond_t cond;
+extern pthread_cond_t cond2;
+extern pthread_mutex_t mutex_clock;
+extern int clock_frequency;
 
 void *clock_thread(void *arg) {
-    while (1)
-    {
-        
+    while (1) {
         pthread_mutex_lock(&mutex_clock);
-        while (done<temp_kop)
-        {
-            pthread_cond_wait(&cond, &mutex_clock);
-           
-            
-        }
-         printf("soy el reloj %d\n", done);
-        done=0;
-        sleep(clock_frequency);
-        pthread_cond_broadcast(&cond2);
+        printf("Tick del reloj\n");
+        pthread_cond_broadcast(&cond); // Notifica a los temporizadores
         pthread_mutex_unlock(&mutex_clock);
+        
+        sleep(clock_frequency); // Marca el ritmo del reloj
     }
-    
-    
 }
