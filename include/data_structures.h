@@ -17,12 +17,12 @@ extern pthread_cond_t cond;
 extern pthread_cond_t cond2;
 extern pthread_cond_t cond_gen;
 
-struct CPU
+typedef struct 
 {
     int cpu_num;
     int core_num;
     int thread_num;
-};
+} CPU;
 
 typedef struct
 {

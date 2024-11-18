@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include "../include/data_structures.h"
 #include <pthread.h>
+#include <unistd.h> 
 
 extern pthread_cond_t cond;
 extern pthread_cond_t cond2;
 extern pthread_cond_t cond_gen;
 extern pthread_mutex_t mutex_clock;
 extern pthread_mutex_t queue_mutex;
+extern int timer_frequency;
 
 void *timer_thread1(void *arg) {
     while (1) {
@@ -21,6 +23,7 @@ void *timer_thread1(void *arg) {
         pthread_mutex_unlock(&queue_mutex);
 
         pthread_mutex_unlock(&mutex_clock);
+        sleep(timer_frequency);
     }
 }
 
@@ -31,5 +34,6 @@ void *timer_thread2(void *arg) {
         printf("Soy el temporizador 2\n");
 
         pthread_mutex_unlock(&mutex_clock);
+        sleep(timer_frequency);
     }
 }

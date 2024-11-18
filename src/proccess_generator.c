@@ -11,6 +11,7 @@ struct PCB {
 
 extern pthread_cond_t cond_gen;
 extern pthread_mutex_t queue_mutex;
+extern int proccess_generator_frequency;
 
 void *proccess_generator_thread(void* arg) {
     int pid = 1;
@@ -20,5 +21,6 @@ void *proccess_generator_thread(void* arg) {
         pthread_cond_wait(&cond_gen, &queue_mutex); // Espera señal del timer 1
         printf("Proceso generado con PID: %d\n", pid++);
         pthread_mutex_unlock(&queue_mutex);
+        sleep(proccess_generator_frequency);
     }
 }
