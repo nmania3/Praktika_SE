@@ -6,5 +6,8 @@
 void *scheduler_thread(void* arg) {
     sleep(1);
     printf("soy el planificador\n");
-    //por ahora nada
+
+    //Meter el primer proceso en ejecucion
+    //
+    
 }

@@ -1,6 +1,5 @@
 #ifndef DATA_STRUCTURES_H
 #define DATA_STRUCTURES_H
-
 #include <pthread.h>
 
 extern int temp_kop;
@@ -31,5 +30,7 @@ typedef struct
 } PCB;
 
 extern PCB *proccess_queue;
+
+
 
 #endif // DATA_STRUCTURES_H
