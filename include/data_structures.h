@@ -23,14 +23,13 @@ typedef struct
     int thread_num;
 } CPU;
 
-typedef struct
-{
+// Define the PCB structure
+typedef struct PCB {
     int pid;
-    //luego meteremos mas cosas
+    struct PCB* next;
 } PCB;
 
-extern PCB *proccess_queue;
-
-
+// Declare the process queue
+extern PCB* process_queue;
 
 #endif // DATA_STRUCTURES_H

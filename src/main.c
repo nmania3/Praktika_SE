@@ -51,6 +51,7 @@ int main(int argc, char const *argv[])
     printf("core_num: %d\n", cpu.core_num);
     printf("thread_num: %d\n", cpu.thread_num);
 
+    printf("\n ------------------------------------ \n");
 
     pthread_t clock_tid, timer_tid1, timer_tid2, scheduler_tid, proccess_generator_tid;
 
