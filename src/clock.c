@@ -5,7 +5,6 @@
 #include <unistd.h> // Para sleep
 
 extern pthread_cond_t cond;
-extern pthread_cond_t cond2;
 extern pthread_mutex_t mutex_clock;
 extern int clock_frequency;
 

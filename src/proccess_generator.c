@@ -24,6 +24,7 @@ void add_to_queue(PCB* new_pcb) {
         }
         temp->next = new_pcb;
     }
+    
 }
 
 
@@ -39,6 +40,19 @@ void free_queue() {
     process_queue = NULL;
 }
 
+PCB get_process(int pid) {
+    PCB* current = process_queue;
+    while (current != NULL) {
+        if (current->pid == pid) {
+            return *current;
+        }
+        current = current->next;
+    }
+    PCB empty_pcb;
+    empty_pcb.pid = -1;
+    return empty_pcb;
+}
+
 void *proccess_generator_thread(void* arg) {
     int pid = 0;
 
@@ -50,6 +64,10 @@ void *proccess_generator_thread(void* arg) {
         
         PCB* new_pcb = (PCB*)malloc(sizeof(PCB));
         new_pcb->pid = pid;
+        new_pcb->state = "READY";
+        new_pcb->execution_time = 0;
+        //aplica un tiempo de ejecución aleatorio entre 2 y 8
+        new_pcb->completion_time = (rand() % 7) + 2;
         new_pcb->next = NULL;
         add_to_queue(new_pcb);
 

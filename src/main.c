@@ -22,8 +22,10 @@ pthread_mutex_t mutex_clock;
 pthread_mutex_t queue_mutex;
 
 pthread_cond_t cond;
-pthread_cond_t cond2;
+pthread_cond_t cond_sched;
 pthread_cond_t cond_gen;
+
+struct CPU cpu;
 
 int main(int argc, char const *argv[])
 {
@@ -39,7 +41,7 @@ int main(int argc, char const *argv[])
     clock_frequency = atoi(argv[2]);
     proccess_generator_frequency = atoi(argv[3]);
 
-    struct CPU cpu;
+    
     cpu.cpu_num = atoi(argv[4]);
     cpu.core_num = atoi(argv[5]);
     cpu.thread_num = atoi(argv[6]);
@@ -58,6 +60,7 @@ int main(int argc, char const *argv[])
     pthread_mutex_init(&mutex_clock, NULL);
     pthread_mutex_init(&queue_mutex, NULL);
     pthread_cond_init(&cond_gen, NULL);
+    pthread_cond_init(&cond_sched, NULL);
 
     pthread_create(&clock_tid, NULL, clock_thread, NULL);
     pthread_create(&timer_tid1, NULL, timer_thread1, NULL);
@@ -74,6 +77,7 @@ int main(int argc, char const *argv[])
     pthread_mutex_destroy(&mutex_clock);
     pthread_mutex_destroy(&queue_mutex);
     pthread_cond_destroy(&cond_gen);
+    pthread_cond_destroy(&cond_sched);
 
     return 0;
 
