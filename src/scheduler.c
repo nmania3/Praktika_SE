@@ -106,8 +106,8 @@ void *proccess_execution_fcfs(void* arg){
 void politica_round_robin(){
     //inicializa la lista de turnos y la lista de bloqueados
     if (block_threads == NULL){
-        // listaDeTurnos[cpu.thread_num*2]; // This line is not needed
         memset(listaDeTurnos, 0, sizeof(listaDeTurnos)); // Initialize with NULL
+        listaDeTurnos[cpu.thread_num*2]; // Initialize with NULL
         block_threads = malloc(cpu.thread_num * sizeof(pthread_t));
         if (block_threads == NULL) {
             perror("Failed to allocate block_threads array");
@@ -116,17 +116,34 @@ void politica_round_robin(){
     }
 
     //insertar los procesos READY en la lista de turnos
+    
     PCB* pcb = process_queue;
     while(pcb != NULL){
         if(strcmp(pcb->state, "READY") == 0){
+            int already_in_list = 0;
+            //verificar si el proceso ya esta en la lista de turnos
             for(int i = 0; i < cpu.thread_num*2; i++){
-                if(listaDeTurnos[i] == NULL){
-                    listaDeTurnos[i] = pcb;
+                if(listaDeTurnos[i] == pcb){
+                    already_in_list = 1;
                     break;
+                }
+            }
+            //si no esta en la lista de turnos, meterlo
+            if (!already_in_list) {
+                for(int i = 0; i < cpu.thread_num*2; i++){
+                    if(listaDeTurnos[i] == NULL){
+                        listaDeTurnos[i] = pcb;
+                        break;
+                    }
                 }
             }
         }
         pcb = pcb->next;
+    }
+    for(int i = 0; i < cpu.thread_num*2; i++){
+        if(listaDeTurnos[i] != NULL){
+            printf("XXXXXXXXXXProceso con PID: %d en lista de turnos en la posicion %d\n", listaDeTurnos[i]->pid, i);
+        }
     }
 
     //ejecutar la cantidad de procesos equivalentes a la cantidad de hilos de la lista de turnos (si estan en estado READY)
