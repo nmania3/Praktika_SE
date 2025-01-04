@@ -55,23 +55,24 @@ PCB get_process(int pid) {
 
 void *proccess_generator_thread(void* arg) {
     int pid = 0;
-
+    float completion_time = 0;
     while (1) {
         pid++;
         pthread_mutex_lock(&queue_mutex);
         pthread_cond_wait(&cond_gen, &queue_mutex); // Espera señal del timer 1
-        printf("Generando proceso con PID: %d\n", pid);
         
         PCB* new_pcb = (PCB*)malloc(sizeof(PCB));
         new_pcb->pid = pid;
         new_pcb->state = "READY";
         new_pcb->execution_time = 0;
         //aplica un tiempo de ejecución aleatorio entre 2 y 8
-        new_pcb->completion_time = (rand() % 7) + 2;
+        completion_time = (rand() % 7) + 20;
+        new_pcb->completion_time = completion_time;
+
         new_pcb->next = NULL;
         add_to_queue(new_pcb);
 
-        printf("Proceso con PID: %d agregado a la cola\n", pid);
+        printf("Proceso con PID: %d agregado a la cola con tiempo de ejecución %f\n", pid, completion_time);
         
         pthread_mutex_unlock(&queue_mutex);
         sleep(proccess_generator_frequency);
