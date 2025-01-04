@@ -72,7 +72,7 @@ void *proccess_generator_thread(void* arg) {
         new_pcb->next = NULL;
         add_to_queue(new_pcb);
 
-        printf("Proceso con PID: %d agregado a la cola con tiempo de ejecución %f\n", pid, completion_time);
+        //printf("Proceso con PID: %d agregado a la cola con tiempo de ejecución %f\n", pid, completion_time);
         
         pthread_mutex_unlock(&queue_mutex);
         sleep(proccess_generator_frequency);

@@ -31,6 +31,7 @@ void *proccess_block(void* arg); // Update function signature
 int quantum = 3;
 PCB* listaDeTurnos[10];
 pthread_t *block_threads;
+int last_process = 0;
 
 
 void *scheduler_thread(void* arg) {
@@ -48,7 +49,7 @@ void *scheduler_thread(void* arg) {
         pthread_mutex_lock(&queue_mutex);
         pthread_cond_wait(&cond_sched, &queue_mutex); // Espera señal del timer 2
         
-        printf("soy el planificador\n");
+        //printf("soy el planificador\n");
         
         //politica_fcfs();
         politica_round_robin();
@@ -116,7 +117,6 @@ void politica_round_robin(){
     }
 
     //insertar los procesos READY en la lista de turnos
-    
     PCB* pcb = process_queue;
     while(pcb != NULL){
         if(strcmp(pcb->state, "READY") == 0){
@@ -146,31 +146,30 @@ void politica_round_robin(){
         }
     }
 
-    //ejecutar la cantidad de procesos equivalentes a la cantidad de hilos de la lista de turnos (si estan en estado READY)
-    for(int i = 0; i < cpu.thread_num; i++){
-        if(listaDeTurnos[i] != NULL){
-            //meter el proceso en exec_queue
+    //si el ultimo proceso que se metio en exec_queue ya termino, se reinicia el contador de procesos
+    if(last_process >= cpu.thread_num*2){
+        last_process = 0;
+    }
+
+    //ejecutar los procesos en la lista de turnos (que esten READY), metiendolos en exec_queue y quedandonos con la posicion de el ultimo proceso que hemos metido
+    //para ejecutarlo en la siguiente vuelta
+    for(int i = last_process; i < cpu.thread_num*2; i++){
+        if(listaDeTurnos[i] != NULL && strcmp(listaDeTurnos[i]->state, "READY") == 0){
             for(int j = 0; j < cpu.thread_num; j++){
-                if(exec_queue[j] == NULL && strcmp(listaDeTurnos[i]->state, "READY") == 0){
+                if(exec_queue[j] == NULL){
                     exec_queue[j] = listaDeTurnos[i];
+                    pthread_create(&threads[j], NULL, proccess_execution_round_robin, exec_queue[j]);
+                    last_process = i + 1; // Update last_process to the next index
                     break;
                 }
             }
-            //ejecutar el proceso en un hilo
-            pthread_create(&threads[i], NULL, proccess_execution_round_robin, listaDeTurnos[i]);
-        }
-    }
-    
-    //vaciar los procesos terminados o bloqueados de exec_queue
-    for(int i = 0; i < cpu.thread_num; i++){
-        if(exec_queue[i] != NULL && (strcmp(exec_queue[i]->state, "FINISHED") == 0 || strcmp(exec_queue[i]->state, "BLOCKED") == 0)){
-            exec_queue[i] = NULL;
+            break; // Exit the loop after scheduling one process
         }
     }
 
     //bloquear los procesos con estado BLOCKED
     for(int i = 0; i < cpu.thread_num*2; i++){
-        if(listaDeTurnos[i] != NULL && strcmp(listaDeTurnos[i]->state, "BLOCKED") == 0){
+        if(listaDeTurnos[i] != NULL && strcmp(listaDeTurnos[i]->state, "BLOCKED1") == 0){
             pthread_create(&block_threads[i], NULL, proccess_block, listaDeTurnos[i]);
         }
     }
@@ -191,7 +190,8 @@ void *proccess_execution_round_robin(void* arg){
     if(quantum < pcb->completion_time - pcb->execution_time){
         sleep(quantum);
         pcb->execution_time += quantum;
-        pcb->state = "BLOCKED";
+        //BLOCKED1 Es un estado para hacer saber al programa que tiene que bloquear este proceso
+        pcb->state = "BLOCKED1";
         printf("Proceso con PID: %d bloqueado\n", pcb->pid);
     } else {
         sleep(pcb->completion_time - pcb->execution_time);
@@ -199,11 +199,17 @@ void *proccess_execution_round_robin(void* arg){
         pcb->state = "FINISHED";
         printf("Proceso con PID: %d terminado\n", pcb->pid);
     }
+    //sacar proceso bloqueado o terminado de exec_queue
+    for(int i = 0; i < cpu.thread_num; i++){
+        if(exec_queue[i] == pcb){
+            exec_queue[i] = NULL;
+        }
+    }
 }
 
 void *proccess_block(void* arg){
     PCB* pcb = (PCB*)arg;
-    pcb->state = "BLOCKED";
+    pcb->state = "BLOCKED2";
     sleep(3);
     pcb->state = "READY";
     printf("Proceso con PID: %d desbloqueado\n", pcb->pid);
