@@ -9,7 +9,7 @@
 extern pthread_cond_t cond_sched;
 extern pthread_mutex_t queue_mutex;
 
-int last_pid = 0;
+int execution_threads_num = 0;
 
 extern struct CPU
 {
@@ -20,7 +20,7 @@ extern struct CPU
 
 extern struct CPU cpu;
 
-PCB* exec_queue[10] = {NULL}; // Initialize with NULL
+PCB** exec_queue = NULL; // Initialize to NULL
 pthread_t *threads = NULL; // Initialize to NULL
 
 void *proccess_execution_fcfs(void* arg); // Update function signature
@@ -29,16 +29,32 @@ void *proccess_block(void* arg); // Update function signature
 
 //Variables para round robin
 int quantum = 3;
-PCB* listaDeTurnos[10];
+PCB** listaDeTurnos = NULL;
 pthread_t *block_threads;
 int last_process = 0;
-
+extern char* scheduler_type;
 
 void *scheduler_thread(void* arg) {
     //actualiza el tamaño de exec_queue a la cantidad de hilos
     // exec_queue[cpu.thread_num]; // This line is not needed
 
-    threads = malloc(cpu.thread_num * sizeof(pthread_t)); // Allocate threads array
+    execution_threads_num = cpu.thread_num * cpu.core_num * cpu.cpu_num; // Update execution_threads_num
+
+    exec_queue = realloc(exec_queue, execution_threads_num * sizeof(PCB*)); // Adjust exec_queue size
+    if (exec_queue == NULL) {
+        perror("Failed to allocate exec_queue array");
+        exit(EXIT_FAILURE);
+    }
+    memset(exec_queue, 0, execution_threads_num * sizeof(PCB*)); // Initialize with NULL
+
+    listaDeTurnos = realloc(listaDeTurnos, execution_threads_num * 2 * sizeof(PCB*)); // Adjust listaDeTurnos size
+    if (listaDeTurnos == NULL) {
+        perror("Failed to allocate listaDeTurnos array");
+        exit(EXIT_FAILURE);
+    }
+    memset(listaDeTurnos, 0, execution_threads_num * 2 * sizeof(PCB*)); // Initialize with NULL
+
+    threads = realloc(threads, execution_threads_num * sizeof(pthread_t)); // Allocate threads array
     if (threads == NULL) {
         perror("Failed to allocate threads array");
         exit(EXIT_FAILURE);
@@ -47,12 +63,15 @@ void *scheduler_thread(void* arg) {
     //crear tantos hilos como thread_num
     while(1){
         pthread_mutex_lock(&queue_mutex);
-        pthread_cond_wait(&cond_sched, &queue_mutex); // Espera señal del timer 2
-        
+        pthread_cond_wait(&cond_sched, &queue_mutex); // Espera señal del timer 2 
         //printf("soy el planificador\n");
         
-        //politica_fcfs();
-        politica_round_robin();
+        if(strcmp(scheduler_type, "FCFS") == 0){
+            politica_fcfs();
+        } else {
+            politica_round_robin();
+        }
+
         pthread_mutex_unlock(&queue_mutex);
         sleep(1);
     }
@@ -76,7 +95,7 @@ void politica_fcfs(){
     }
 
     //si hay espacio en exec_queue ponerlo en exec_queue
-    for(int i = 0; i < cpu.thread_num; i++){
+    for(int i = 0; i < execution_threads_num; i++){
         if(exec_queue[i] == NULL){
             exec_queue[i] = pcb; // Store pointer
             //ejecutar el proceso en un hilo
@@ -87,7 +106,7 @@ void politica_fcfs(){
     }
 
     //vaciar los procesos terminados de exec_queue
-    for(int i = 0; i < cpu.thread_num; i++){
+    for(int i = 0; i < execution_threads_num; i++){
         if(exec_queue[i] != NULL && strcmp(exec_queue[i]->state, "FINISHED") == 0){ // Use -> for pointer access
             exec_queue[i] = NULL;
         }
@@ -107,9 +126,7 @@ void *proccess_execution_fcfs(void* arg){
 void politica_round_robin(){
     //inicializa la lista de turnos y la lista de bloqueados
     if (block_threads == NULL){
-        memset(listaDeTurnos, 0, sizeof(listaDeTurnos)); // Initialize with NULL
-        listaDeTurnos[cpu.thread_num*2]; // Initialize with NULL
-        block_threads = malloc(cpu.thread_num * sizeof(pthread_t));
+        block_threads = malloc(execution_threads_num * sizeof(pthread_t));
         if (block_threads == NULL) {
             perror("Failed to allocate block_threads array");
             exit(EXIT_FAILURE);
@@ -122,7 +139,7 @@ void politica_round_robin(){
         if(strcmp(pcb->state, "READY") == 0){
             int already_in_list = 0;
             //verificar si el proceso ya esta en la lista de turnos
-            for(int i = 0; i < cpu.thread_num*2; i++){
+            for(int i = 0; i < execution_threads_num * 2; i++){
                 if(listaDeTurnos[i] == pcb){
                     already_in_list = 1;
                     break;
@@ -130,7 +147,7 @@ void politica_round_robin(){
             }
             //si no esta en la lista de turnos, meterlo
             if (!already_in_list) {
-                for(int i = 0; i < cpu.thread_num*2; i++){
+                for(int i = 0; i < execution_threads_num * 2; i++){
                     if(listaDeTurnos[i] == NULL){
                         listaDeTurnos[i] = pcb;
                         break;
@@ -140,22 +157,22 @@ void politica_round_robin(){
         }
         pcb = pcb->next;
     }
-    for(int i = 0; i < cpu.thread_num*2; i++){
+    for(int i = 0; i < execution_threads_num * 2; i++){
         if(listaDeTurnos[i] != NULL){
             printf("XXXXXXXXXXProceso con PID: %d en lista de turnos en la posicion %d\n", listaDeTurnos[i]->pid, i);
         }
     }
 
     //si el ultimo proceso que se metio en exec_queue ya termino, se reinicia el contador de procesos
-    if(last_process >= cpu.thread_num*2){
+    if(last_process >= execution_threads_num * 2){
         last_process = 0;
     }
 
     //ejecutar los procesos en la lista de turnos (que esten READY), metiendolos en exec_queue y quedandonos con la posicion de el ultimo proceso que hemos metido
     //para ejecutarlo en la siguiente vuelta
-    for(int i = last_process; i < cpu.thread_num*2; i++){
+    for(int i = last_process; i < execution_threads_num * 2; i++){
         if(listaDeTurnos[i] != NULL && strcmp(listaDeTurnos[i]->state, "READY") == 0){
-            for(int j = 0; j < cpu.thread_num; j++){
+            for(int j = 0; j < execution_threads_num; j++){
                 if(exec_queue[j] == NULL){
                     exec_queue[j] = listaDeTurnos[i];
                     pthread_create(&threads[j], NULL, proccess_execution_round_robin, exec_queue[j]);
@@ -168,14 +185,14 @@ void politica_round_robin(){
     }
 
     //bloquear los procesos con estado BLOCKED
-    for(int i = 0; i < cpu.thread_num*2; i++){
+    for(int i = 0; i < execution_threads_num * 2; i++){
         if(listaDeTurnos[i] != NULL && strcmp(listaDeTurnos[i]->state, "BLOCKED1") == 0){
             pthread_create(&block_threads[i], NULL, proccess_block, listaDeTurnos[i]);
         }
     }
 
     //vaciar los procesos terminados de la lista de turnos
-    for(int i = 0; i < cpu.thread_num*2; i++){
+    for(int i = 0; i < execution_threads_num * 2; i++){
         if(listaDeTurnos[i] != NULL && strcmp(listaDeTurnos[i]->state, "FINISHED") == 0){
             listaDeTurnos[i] = NULL;
         }
@@ -200,7 +217,7 @@ void *proccess_execution_round_robin(void* arg){
         printf("Proceso con PID: %d terminado\n", pcb->pid);
     }
     //sacar proceso bloqueado o terminado de exec_queue
-    for(int i = 0; i < cpu.thread_num; i++){
+    for(int i = 0; i < execution_threads_num; i++){
         if(exec_queue[i] == pcb){
             exec_queue[i] = NULL;
         }

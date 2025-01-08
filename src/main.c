@@ -15,6 +15,8 @@ struct CPU
     int thread_num;
 };
 
+char* scheduler_type;
+
 int temp_kop=2;
 int done=0;
 
@@ -30,12 +32,13 @@ struct CPU cpu;
 int main(int argc, char const *argv[])
 {
 
-    if (argc != 7)
+    if (argc != 8)
     {
-        fprintf(stderr, "Usage: %s <timer_frequency> <clock_frequency> <proccess_generator_frequency> <cpu_num> <core_num> <thread_num>\n", argv[0]);
-        fprintf(stderr, "Default: %s 0 1 0 1 1 1\n", argv[0]);
+        fprintf(stderr, "Usage: %s <timer_frequency> <clock_frequency> <proccess_generator_frequency> <cpu_num> <core_num> <thread_num> <scheduler_type>\n", argv[0]);
+        fprintf(stderr, "Default: %s 0 1 0 1 1 1 FCFS\n", argv[0]);
         return 1;
     }
+    
 
     timer_frequency = atoi(argv[1]);
     clock_frequency = atoi(argv[2]);
@@ -46,12 +49,27 @@ int main(int argc, char const *argv[])
     cpu.core_num = atoi(argv[5]);
     cpu.thread_num = atoi(argv[6]);
 
+    scheduler_type = argv[7];
+
+    if(cpu.thread_num < 1 || cpu.core_num < 1 || cpu.cpu_num < 1){
+        fprintf(stderr, "Error: thread_num, core_num and cpu_num must be at lease 1\n");
+        return 1;
+    }
+
+    if(strcmp(scheduler_type, "FCFS") != 0 && strcmp(scheduler_type, "ROUND_ROBIN") != 0){
+        fprintf(stderr, "Error: scheduler_type must be FCFS or ROUND_ROBIN\n");
+        return 1;
+    }
+
+    
+
     printf("timer_frequency: %d\n", timer_frequency);
     printf("clock_frequency: %d\n", clock_frequency);
     printf("proccess_generator_frequency: %d\n", proccess_generator_frequency);
     printf("cpu_num: %d\n", cpu.cpu_num);
     printf("core_num: %d\n", cpu.core_num);
     printf("thread_num: %d\n", cpu.thread_num);
+    printf("scheduler_type: %s\n", scheduler_type);
 
     printf("\n ------------------------------------ \n");
 
