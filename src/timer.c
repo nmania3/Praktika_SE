@@ -15,7 +15,7 @@ void *timer_thread1(void *arg) {
     while (1) {
         pthread_mutex_lock(&mutex_clock);
         pthread_cond_wait(&cond, &mutex_clock); // Espera el tick del reloj
-        //printf("Soy el temporizador 1\n");
+        printf("Soy el temporizador 1\n");
         
         // Notifica al generador de procesos
         pthread_mutex_lock(&queue_mutex);
@@ -31,7 +31,7 @@ void *timer_thread2(void *arg) {
     while (1) {
         pthread_mutex_lock(&mutex_clock);
         pthread_cond_wait(&cond, &mutex_clock); // Espera el tick del reloj
-        //printf("Soy el temporizador 2\n");
+        printf("Soy el temporizador 2\n");
 
         // Notifica al planificador
         pthread_mutex_lock(&queue_mutex);

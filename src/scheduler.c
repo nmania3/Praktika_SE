@@ -36,7 +36,6 @@ extern char* scheduler_type;
 
 void *scheduler_thread(void* arg) {
     //actualiza el tamaño de exec_queue a la cantidad de hilos
-    // exec_queue[cpu.thread_num]; // This line is not needed
 
     execution_threads_num = cpu.thread_num * cpu.core_num * cpu.cpu_num; // Update execution_threads_num
 

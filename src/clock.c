@@ -11,7 +11,7 @@ extern int clock_frequency;
 void *clock_thread(void *arg) {
     while (1) {
         pthread_mutex_lock(&mutex_clock);
-        //printf("Tick del reloj\n");
+        printf("Tick del reloj\n");
         pthread_cond_broadcast(&cond); // Notifica a los temporizadores
         pthread_mutex_unlock(&mutex_clock);
         
